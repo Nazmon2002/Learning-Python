@@ -70,3 +70,56 @@ q, r = r, q
 print("After swapping: q =", q, "r =", r)
 
 9.
+num = int(input("Enter a number: "))
+if num % 2 == 0:
+    print(num, "is Even ")
+else:
+    print(num, "is Odd ")
+
+
+if num & 1 == 0:
+    print(num, "is Even ")
+else:
+    print(num, "is Odd ")
+
+10.
+a = int(input("Enter first number: "))
+b = int(input("Enter second number: "))
+c = int(input("Enter third number: "))
+
+if a >= b and a >= c:
+    print("Maximum number is:", a)
+elif b >= a and b >= c:
+    print("Maximum number is:", b)
+else:
+    print("Maximum number is:", c)
+
+11.
+total_days = int(input("Enter total number of days: "))
+
+years = total_days // 365
+weeks = (total_days % 365) // 7
+days = (total_days % 365) % 7
+
+print("Years:", years)
+print("Weeks:", weeks)
+print("Days:", days)
+
+12.
+a = int(input("Enter first number: "))
+b = int(input("Enter second number: "))
+
+minimum = a if a < b else b
+print("Minimum number is:", minimum)
+
+13.
+num = int(input("Enter a number: "))
+print("Original number:", num)
+
+num = num + 1
+print("After pre-increment:", num)
+
+num2 = num
+print("Value shown before post-increment (simulated):", num2)
+num2 = num2 + 1
+print("After post-increment (simulated):", num2)
