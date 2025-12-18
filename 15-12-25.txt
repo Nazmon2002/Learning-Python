@@ -1,0 +1,169 @@
+import random
+
+# -------------------- Fitness Function --------------------
+def fitness(chromosome):
+    """Counts number of non-attacking queen pairs"""
+    n = len(chromosome)
+    non_attacking = 0
+    max_pairs = n * (n - 1) // 2
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            if chromosome[i] != chromosome[j] and \
+               abs(chromosome[i] - chromosome[j]) != abs(i - j):
+                non_attacking += 1
+
+    return non_attacking, max_pairs
+
+
+# -------------------- Genetic Algorithm --------------------
+def genetic_n_queens(n, pop_size=100, mutation_rate=0.2, max_generations=1000):
+
+    max_fitness = n * (n - 1) // 2
+
+    # Initial population
+    population = [random.sample(range(n), n) for _ in range(pop_size)]
+
+    for generation in range(max_generations):
+
+        population.sort(key=lambda c: fitness(c)[0], reverse=True)
+
+        best = population[0]
+        best_fit, _ = fitness(best)
+
+        print(f"Generation {generation} | Fitness: {best_fit}")
+
+        if best_fit == max_fitness:
+            print("\n✅ Solution Found")
+            return best
+
+        # Selection (Top 50%)
+        parents = population[:pop_size // 2]
+
+        # Create next generation
+        new_population = parents[:]
+
+        while len(new_population) < pop_size:
+            p1, p2 = random.sample(parents, 2)
+
+            # Crossover
+            cut = random.randint(1, n - 2)
+            child = p1[:cut] + [x for x in p2 if x not in p1[:cut]]
+
+            # Mutation
+            if random.random() < mutation_rate:
+                i, j = random.sample(range(n), 2)
+                child[i], child[j] = child[j], child[i]
+
+            new_population.append(child)
+
+        population = new_population
+
+    return None
+
+
+# -------------------- Run --------------------
+if __name__ == "__main__":
+    N = 8
+    solution = genetic_n_queens(N)
+
+    if solution:
+        print("\nQueen Positions (Column → Row):")
+        print(solution)
+
+
+
+
+
+import random
+
+# -------------------- Individual --------------------
+class Individual:
+    def __init__(self, genes=None):
+        self.gene_length = 5
+        if genes is None:
+            self.genes = [random.randint(0, 1) for _ in range(self.gene_length)]
+        else:
+            self.genes = genes[:]
+        self.fitness = 0
+        self.calc_fitness()
+
+    def calc_fitness(self):
+        self.fitness = sum(self.genes)
+
+
+# -------------------- Population --------------------
+class Population:
+    def __init__(self, size=10):
+        self.individuals = [Individual() for _ in range(size)]
+        self.fittest = 0
+
+    def calculate_fitness(self):
+        for ind in self.individuals:
+            ind.calc_fitness()
+        self.fittest = max(ind.fitness for ind in self.individuals)
+
+    def get_fittest(self):
+        return max(self.individuals, key=lambda x: x.fitness)
+
+    def get_second_fittest(self):
+        sorted_pop = sorted(self.individuals, key=lambda x: x.fitness, reverse=True)
+        return sorted_pop[1]
+
+    def get_least_fittest_index(self):
+        return min(range(len(self.individuals)),
+                   key=lambda i: self.individuals[i].fitness)
+
+
+# -------------------- Genetic Algorithm --------------------
+class SimpleDemoGA:
+    def __init__(self):
+        self.population = Population()
+        self.generation = 0
+
+    def crossover(self, p1, p2):
+        point = random.randint(1, 4)
+        child_genes = p1.genes[:point] + p2.genes[point:]
+        return Individual(child_genes)
+
+    def mutation(self, individual):
+        point = random.randint(0, 4)
+        individual.genes[point] ^= 1
+        individual.calc_fitness()
+
+    def run(self):
+        self.population.calculate_fitness()
+        print(f"Generation {self.generation} Fittest {self.population.fittest}")
+
+        while self.population.fittest < 5:
+            self.generation += 1
+
+            # Selection
+            parent1 = self.population.get_fittest()
+            parent2 = self.population.get_second_fittest()
+
+            # Crossover
+            child = self.crossover(parent1, parent2)
+
+            # Mutation (probability)
+            if random.random() < 0.7:
+                self.mutation(child)
+
+            # Replace least fit
+            index = self.population.get_least_fittest_index()
+            self.population.individuals[index] = child
+
+            self.population.calculate_fitness()
+            print(f"Generation {self.generation} Fittest {self.population.fittest}")
+
+        best = self.population.get_fittest()
+        print("\n✅ Solution Found")
+        print("Generation:", self.generation)
+        print("Fitness:", best.fitness)
+        print("Genes:", "".join(map(str, best.genes)))
+
+
+# -------------------- Main --------------------
+if __name__ == "__main__":
+    ga = SimpleDemoGA()
+    ga.run()

@@ -19,7 +19,7 @@ class IDDFS:
                 print("Traversal Order:", path)
                 return
             max_depth += 1
-            if max_depth > self.R * self.C:  # optional upper limit
+            if max_depth > self.R * self.C: 
                 print(f"Path not found at max depth {max_depth} using IDDFS")
                 return
 
@@ -33,7 +33,7 @@ class IDDFS:
             self.goalFound = True
             return
 
-        directions = [(1,0), (-1,0), (0,1), (0,-1)]  # down, up, right, left
+        directions = [(1,0), (-1,0), (0,1), (0,-1)] 
         for dr, dc in directions:
             nr, nc = r + dr, c + dc
             if 0 <= nr < self.R and 0 <= nc < self.C and not visited[nr][nc] and self.grid[nr][nc] == 0:
@@ -44,9 +44,7 @@ class IDDFS:
         path.pop()
         visited[r][c] = False
 
-# ------------------------
-# Main program for multiple test cases
-# ------------------------
+
 def main():
     with open("input.txt", "r") as f:
         lines = [line.strip() for line in f if line.strip()]
