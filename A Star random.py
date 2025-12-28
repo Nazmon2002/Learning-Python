@@ -48,11 +48,9 @@ def generate_random_grid(R, C, obstacle_prob=0.2):
     return grid
 
 def main():
-    # Random grid parameters
-    R, C = 10, 10  # grid size
+    R, C = 10, 10  
     grid = generate_random_grid(R, C, obstacle_prob=0.2)
 
-    # Random start and target positions
     empty_cells = [(r, c) for r in range(R) for c in range(C) if grid[r][c] == 0]
     start = random.choice(empty_cells)
     target = random.choice(empty_cells)

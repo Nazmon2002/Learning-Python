@@ -1,78 +1,93 @@
-import random
+def read_test_cases(filename):
+    with open(filename, "r") as file:
+        lines = [line.strip() for line in file if line.strip()]
 
-class IterativeDeepening:
-    def __init__(self):
-        self.stack = []
-        self.numberOfNodes = 0
-        self.depth = 0
-        self.maxDepth = 0
-        self.goalFound = False
+    test_cases = []
+    i = 0
+    n = len(lines)
 
-    def iterativeDeepening(self, adjacencyMatrix, Source, destination):
-        self.numberOfNodes = len(adjacencyMatrix) - 1
-        while not self.goalFound:
-            self.depthLimitedSearch(adjacencyMatrix, Source, destination)
-            self.maxDepth += 1
-            if self.goalFound:
-                print("\nGoal Found at depth", self.depth)
-                return
-            self.depth = 0
-            self.stack = []
+    while i < n:
+        # ---- Read grid size safely ----
+        if i >= n:
+            break
+        parts = lines[i].split()
+        if len(parts) != 2:
+            break
+        rows, cols = map(int, parts)
+        i += 1
 
-    def depthLimitedSearch(self, adjacencyMatrix, Source, goal):
-        visited = [0] * (self.numberOfNodes + 1)
-        self.stack.append(Source)
-        print("\nAt Depth", self.maxDepth)
-        print('\n', Source, end='\t')
+        # ---- Read grid safely ----
+        if i + rows > n:
+            break
+        grid = []
+        for _ in range(rows):
+            grid.append(list(map(int, lines[i].split())))
+            i += 1
 
-        while self.stack:
-            element = self.stack[-1]
-            found = False
-            for destination in range(1, self.numberOfNodes + 1):
-                if self.depth < self.maxDepth:
-                    if adjacencyMatrix[element][destination] == 1 and visited[destination] == 0:
-                        visited[destination] = 1
-                        self.depth += 1
-                        self.stack.append(destination)
-                        print(destination, end='\t')
-                        if destination == goal:
-                            self.goalFound = True
-                            return
-                        found = True
-                        break
+        # ---- Read start safely ----
+        if i >= n or not lines[i].lower().startswith("start"):
+            break
+        start = tuple(map(int, lines[i].split(":")[1].split()))
+        i += 1
 
-            if not found:
-                self.stack.pop()
-                self.depth -= 1
+        # ---- Read target safely ----
+        if i >= n or not lines[i].lower().startswith("target"):
+            break
+        target = tuple(map(int, lines[i].split(":")[1].split()))
+        i += 1
+
+        test_cases.append((grid, start, target))
+
+    return test_cases
 
 
-if __name__ == "__main__":
-    try:
-        print("Enter the number of nodes in the graph\n")
-        number_of_nodes = int(input().strip())
+def iddfs(grid, start, target):
+    rows, cols = len(grid), len(grid[0])
+    max_depth = rows * cols
 
-        adjacency_matrix = [[0] * (number_of_nodes + 1) for _ in range(number_of_nodes + 1)]
+    def dfs(node, depth, path, visited):
+        if depth < 0:
+            return False
 
-        for i in range(1, number_of_nodes + 1):
-            for j in range(1, number_of_nodes + 1):
-                if i != j:
-                    adjacency_matrix[i][j] = random.choice([0, 1])
-                else:
-                    adjacency_matrix[i][j] = 0
+        if node == target:
+            path.append(node)
+            return True
 
-        print("\nRandomly Generated Adjacency Matrix:")
-        for row in adjacency_matrix[1:]:
-            print(row[1:])
+        r, c = node
+        visited.add(node)
+        path.append(node)
 
-        print("\nEnter the Source for the graph\n")
-        Source = int(input().strip())
-    
+        for dr, dc in [(0,1), (1,0), (0,-1), (-1,0)]:
+            nr, nc = r + dr, c + dc
+            if (0 <= nr < rows and 0 <= nc < cols and
+                grid[nr][nc] == 0 and (nr, nc) not in visited):
+                if dfs((nr, nc), depth - 1, path, visited):
+                    return True
 
-        print("\nEnter the destination for the graph\n")
-        destination = int(input().strip())
+        path.pop()
+        visited.remove(node)
+        return False
 
-        iterativeDeepening = IterativeDeepening()
-        iterativeDeepening.iterativeDeepening(adjacency_matrix,Source, destination)
+    for depth in range(max_depth + 1):
+        path = []
+        visited = set()
+        if dfs(start, depth, path, visited):
+            return True, depth, path
 
-    except ValueError:
-        print("Wrong Input format")
+    return False, max_depth, []
+
+
+# ---------- MAIN ----------
+filename = "input_iddfs.txt"
+test_cases = read_test_cases(filename)
+
+for idx, (grid, start, target) in enumerate(test_cases, start=1):
+    found, depth, path = iddfs(grid, start, target)
+
+    print(f"Case #{idx}:")
+    if found:
+        print(f"Path found at depth {depth} using IDDFS")
+        print("Traversal Order:", path)
+    else:
+        print(f"Path not found at max depth {depth} using IDDFS")
+    print()

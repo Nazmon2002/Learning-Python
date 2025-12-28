@@ -1,52 +1,57 @@
-def is_safe(vertex, graph, color, c):
-    for adj in graph[vertex]:
-        if color[adj] == c:
+def read_graph_from_file(filename):
+    with open(filename, "r") as file:
+        lines = [line.strip() for line in file if line.strip()]
+
+    idx = 0
+    N, M, K = map(int, lines[idx].split())
+    idx += 1
+
+    graph = [[] for _ in range(N)]
+    for _ in range(M):
+        u, v = map(int, lines[idx].split())
+        idx += 1
+        graph[u].append(v)
+        graph[v].append(u)
+
+    return N, M, K, graph
+
+
+def is_safe(vertex, color, colors, graph):
+    for neighbor in graph[vertex]:
+        if colors[neighbor] == color:
             return False
     return True
 
 
-def graph_coloring_util(vertex, graph, color, n, k):
-    if vertex == n:
+def graph_coloring_util(vertex, N, K, colors, graph):
+    if vertex == N:
         return True
 
-    for c in range(1, k + 1):
-        if is_safe(vertex, graph, color, c):
-            color[vertex] = c
-            if graph_coloring_util(vertex + 1, graph, color, n, k):
+    for color in range(1, K + 1):
+        if is_safe(vertex, color, colors, graph):
+            colors[vertex] = color
+            if graph_coloring_util(vertex + 1, N, K, colors, graph):
                 return True
-            color[vertex] = 0 
+            colors[vertex] = 0  # Backtrack
 
     return False
 
 
-def solve_two_cases(filename):
-    with open(filename, "r") as file:
-        case_no = 1
-
-        while True:
-            line = file.readline().strip()
-            if not line:
-                break  
-
-            n, m, k = map(int, line.split())
-            graph = [[] for _ in range(n)]
-
-            for _ in range(m):
-                u, v = map(int, file.readline().split())
-                graph[u].append(v)
-                graph[v].append(u)
-
-            color = [0] * n
-
-            print(f"Case #{case_no}:")
-            if graph_coloring_util(0, graph, color, n, k):
-                print(f"Coloring Possible with {k} Colors")
-                print("Color Assignment:", color)
-            else:
-                print(f"Coloring Not Possible with {k} Colors")
-            print()
-
-            case_no += 1
+def graph_coloring(N, K, graph):
+    colors = [0] * N
+    if graph_coloring_util(0, N, K, colors, graph):
+        return True, colors
+    return False, []
 
 
-solve_two_cases("input1.txt")
+# -------- MAIN --------
+filename = "input_gc.txt"
+N, M, K, graph = read_graph_from_file(filename)
+
+possible, color_assignment = graph_coloring(N, K, graph)
+
+if possible:
+    print(f"Coloring Possible with {K} Colors")
+    print("Color Assignment:", color_assignment)
+else:
+    print(f"Coloring Not Possible with {K} Colors")
